@@ -67,10 +67,10 @@ services:
       API_URL: http://api:3001/
 
     volumes:
-      - ./packages/webapp:/usr/src/app/packages/webapp
+      - ./packages/webapp/src/:/usr/src/app/packages/webapp/src
+      - ./packages/webapp/public/:/usr/src/app/packages/webapp/public
+      - ./packages/webapp/tsconfig.json:/usr/src/app/packages/webapp/tsconfig.json
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
+
 volumes:
   db-data:
