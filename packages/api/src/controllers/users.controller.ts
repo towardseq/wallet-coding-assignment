@@ -16,6 +16,16 @@ class UsersController {
     }
   };
 
+  public countUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const findAllUsersData: User[] = await this.userService.findAllUser();
+
+      res.status(200).json({ data: { count: findAllUsersData.length }, message: 'count' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public getUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = Number(req.params.id);
