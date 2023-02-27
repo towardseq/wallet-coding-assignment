@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: equi_local_psql
+    image: equi-postgres
+    restart: always
+    build:
+      dockerfile: ./Dockerfile
+      target: db
+    environment:
+      POSTGRES_USER: equi
+      POSTGRES_PASSWORD: equi123
+      POSTGRES_DB: equi
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d:Z
+      - ./database/psqldb:/var/lib/postgresql
+
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-U', 'equi', '-d', 'equi' ]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+      start_period: 1s
+    ports:
+      - '5432:5432'
+    networks:
+      - equi-local-network
+  api:
+    build:
+      context: .
+      target: api
+      dockerfile: ./Dockerfile
+    stop_signal: SIGKILL
+    command: yarn start
+    ports:
+      - 3001:3001
+      - 9229:9229
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:3001/healthcheck'
+        ]
+      timeout: 5s
+      retries: 50
+      start_period: 5s
+      interval: 3s
+    environment:
+      DATABASE_URL: postgres://equi:equi123@db/equi?schema=public&connect_timeout=300
+
+    volumes:
+      - .:/usr/src/app/
+
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
