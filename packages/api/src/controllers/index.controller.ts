@@ -10,7 +10,7 @@ class IndexController {
     }
   };
 
-  public healthcheck = async (req: Request, res: Response, next: NextFunction): void => {
+  public healthcheck = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const prisma = new PrismaClient();
       const numUsers = (await prisma.user.findMany()).length;
