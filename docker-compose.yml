@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   db:
-    container_name: equi_local_psql
-    image: equi-postgres
+    image: equi-watch-assignment-postgres
     restart: always
     build:
       dockerfile: ./Dockerfile
@@ -13,9 +12,8 @@ services:
       POSTGRES_PASSWORD: equi123
       POSTGRES_DB: equi
     volumes:
-      - ./database/init:/docker-entrypoint-initdb.d:Z
-      - ./database/psqldb:/var/lib/postgresql
-
+      - ./packages/database/init:/docker-entrypoint-initdb.d:Z
+      - db-data:/var/lib/postgresql
     healthcheck:
       test: [ 'CMD', 'pg_isready', '-U', 'equi', '-d', 'equi' ]
       interval: 2s
@@ -24,15 +22,13 @@ services:
       start_period: 1s
     ports:
       - '5432:5432'
-    networks:
-      - equi-local-network
   api:
     build:
       context: .
       target: api
       dockerfile: ./Dockerfile
     stop_signal: SIGKILL
-    command: yarn start
+    command: bash -c 'npm run prisma:migrate; npm run dev'
     ports:
       - 3001:3001
       - 9229:9229
@@ -52,9 +48,11 @@ services:
       DATABASE_URL: postgres://equi:equi123@db/equi?schema=public&connect_timeout=300
 
     volumes:
-      - .:/usr/src/app/
+      - ./packages/api/src:/usr/src/app/packages/api/src
 
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+volumes:
+  db-data:
