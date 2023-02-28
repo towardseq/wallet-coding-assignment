@@ -6,5 +6,5 @@ Adding a dependency:
 ```
 npm i <DEPENDENCY>
 docker compose down
-docker compose up --rebuild
+docker compose up --build
 ```
